@@ -4,11 +4,10 @@ import functools
 import logging
 import os
 import sys
+import warnings
 from collections import UserDict
 from contextlib import contextmanager
 from typing import IO, TYPE_CHECKING, Generic, Iterator, List, Sequence, Tuple, TypeVar, overload
-
-from yaml import YAMLError
 
 from mkdocs import exceptions, utils
 
@@ -242,13 +241,12 @@ class Config(UserDict):
 
     def load_file(self, config_file: IO) -> None:
         """Load config options from the open file descriptor of a YAML file."""
-        try:
-            return self.load_dict(utils.yaml_load(config_file))
-        except YAMLError as e:
-            # MkDocs knows and understands ConfigurationErrors
-            raise exceptions.ConfigurationError(
-                f"MkDocs encountered an error parsing the configuration file: {e}"
-            )
+        warnings.warn(
+            "Config.load_file is not used since MkDocs 1.5 and will be removed soon. "
+            "Use MkDocsConfig.load_file instead",
+            DeprecationWarning,
+        )
+        return self.load_dict(utils.yaml_load(config_file))
 
 
 @functools.lru_cache(maxsize=None)

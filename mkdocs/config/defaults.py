@@ -1,9 +1,11 @@
 from __future__ import annotations
 
-from typing import Dict
+from typing import IO, Dict, Optional
 
+import mkdocs.structure.pages
 from mkdocs.config import base
 from mkdocs.config import config_options as c
+from mkdocs.utils.yaml import get_yaml_loader, yaml_load
 
 
 def get_schema() -> base.PlainConfigSchema:
@@ -108,6 +110,10 @@ class MkDocsConfig(base.Config):
     mdx_configs = c.Private[Dict[str, dict]]()
     """PyMarkdown extension configs. Populated from `markdown_extensions`."""
 
+    _current_page = c.Private[Optional[mkdocs.structure.pages.Page]]()
+    """The currently rendered page. Please do not access this and instead
+    rely on the `page` argument to event handlers."""
+
     strict = c.Type(bool, default=False)
     """Enabling strict mode causes MkDocs to stop the build when a problem is
     encountered rather than display an error."""
@@ -136,3 +142,8 @@ class MkDocsConfig(base.Config):
 
     watch = c.ListOfPaths(default=[])
     """A list of extra paths to watch while running `mkdocs serve`."""
+
+    def load_file(self, config_file: IO) -> None:
+        """Load config options from the open file descriptor of a YAML file."""
+        loader = get_yaml_loader(config=self)
+        self.load_dict(yaml_load(config_file, loader))
